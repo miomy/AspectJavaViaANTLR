@@ -1,4 +1,4 @@
-grammar AspectJava;
+grammar OBAspect;
 
 options {
     backtrack=true;
