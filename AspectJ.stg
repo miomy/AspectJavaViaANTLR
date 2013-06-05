@@ -1,0 +1,330 @@
+group AspectJ;
+
+program(packageDeclaration, aspectDeclaration) ::= <<
+<packageDeclaration>
+<aspectDeclaration>
+>>
+
+pckDecl(packageKeyword, packageName) ::= <<
+<packageKeyword> <packageName>;
+>>
+
+asptDecl(accessModifier, aspectName, grammarName, aspectBody) ::= <<
+<accessModifier> aspect <aspectName> {
+    <aspectBody>
+}
+>>
+
+lineList(l) ::= <<
+<l:{p | <p>}; separator="\n">
+>>
+
+sepList(l) ::= <<
+<l:{p | <p>}; separator=" ">
+>>
+
+simpleTypeVarDecl(accessModifier, variableType, variableName, expression) ::= <<
+<accessModifier> <variableType> <variableName> = <expression>;
+>>
+
+pcdDecl(accessModifier, pointcutDescriptor) ::= <<
+<accessModifier> <pointcutDescriptor>;
+>>
+
+pointcutDescriptor(pcdKeyword, pcdName, pcdBody) ::= <<
+<pcdKeyword> <pcdName>() : <pcdBody>
+>>
+
+domainSpecificPCD(pcd) ::= <<
+within(<grammarName>Parser)&&(<pcd>)
+>>
+
+advDecl(locMod, boundPCD, customCodeBlock) ::= <<
+<locMod>(): <boundPCD> 
+<customCodeBlock>
+>>
+
+disFlt(con, disf) ::= <<
+<con><disf>
+>>
+
+disFltf(dis) ::= <<
+||<dis>
+>>
+
+eptStr() ::= <<
+>>
+
+conFlt(lit, conf) ::= <<
+<lit><conf>
+>>
+
+conFltf(con) ::= <<
+&&<con>
+>>
+
+wrapStr(f) ::= <<
+(<f>)
+>>
+
+copyStr(f) ::= <<
+<f>
+>>
+
+tglFlt(f) ::= <<
+!<f>
+>>
+
+atmFlt(f) ::= <<
+(<f>)
+>>
+
+altFilterForWithin(altIndex) ::= <<
+&&if(<grammarName>Parser.branchTrace.peek().matches("<ruleNamePattern>:<altIndex>"))
+>>
+
+reverseAltFilterForWithin(altIndex) ::= <<
+&&if(!<grammarName>Parser.branchTrace.peek().matches("<ruleNamePattern>:<altIndex>"))
+>>
+
+/* default behaviour of @rule:alt:$attr is set($attr)&&within(@rule:alt) */
+attrFilter1(locationModifier, ruleNameValue, ruleNamePattern, alt, attributeName) ::= <<
+call(public static void <grammarName>Parser.<locationModifier>_Set_Rule_<ruleNameValue>_Attribute_<attributeName>())<alt>
+>>
+
+attrFilter2(locationModifier, ruleNameValue, ruleNamePattern, alt, attributeName) ::= <<
+call(public static void <grammarName>Parser.<locationModifier>_Set_Rule_<ruleNameValue>_Attribute_*())&&!call(public static void <grammarName>Parser.<locationModifier>_Set_Rule_<ruleNameValue>_Attribute_<attributeName>())<alt>
+>>
+
+attrFilter3(locationModifier, ruleNameValue, ruleNamePattern, alt, attributeName) ::= <<
+call(public static void <grammarName>Parser.<locationModifier>_Set_Rule_*_Attribute_<attributeName>())&&!call(public static void <grammarName>Parser.<locationModifier>_Set_Rule_<ruleNameValue>_Attribute_<attributeName>())<alt>
+>>
+
+/* default behaviour of @rule:alt:#token is match(#token)&&within(@rule:alt) */
+tokenFilter1(locationModifier, ruleNameValue, ruleNamePattern, alt, tokenName) ::= <<
+withincode(public final * <grammarName>Parser.<ruleNameValue>(..))&&call(public static void <grammarName>Parser.<locationModifier>_Match_Token_<tokenName>())<alt>
+>>
+
+tokenFilter2(locationModifier, ruleNameValue, ruleNamePattern, alt, tokenName) ::= <<
+withincode(public final * <grammarName>Parser.<ruleNameValue>(..))&&call(public static void <grammarName>Parser.<locationModifier>_Match_Token_*())&&!call(public static void <grammarName>Parser.<locationModifier>_Match_Token_<tokenName>())<alt>
+>>
+
+tokenFilter3(locationModifier, ruleNameValue, ruleNamePattern, alt, tokenName) ::= <<
+withincode(public final * <grammarName>Parser.*(..))&&!withincode(public final * <grammarName>Parser.<ruleNameValue>(..))&&call(public static void <grammarName>Parser.<locationModifier>_Match_Token_<tokenName>())<alt>
+>>
+
+nonterminalFilter1(locationModifier, ruleNameValue, ruleNamePattern, alt, subruleName) ::= <<
+withincode(public final * <grammarName>Parser.<ruleNameValue>(..))&&call(public static void <grammarName>Parser.<locationModifier>_Sub_Rule_<subruleName>())<alt>
+>>
+
+nonterminalFilter2(locationModifier, ruleNameValue, ruleNamePattern, alt, subruleName) ::= <<
+withincode(public final * <grammarName>Parser.<ruleNameValue>(..))&&call(public static void <grammarName>Parser.<locationModifier>_Sub_Rule_*())&&!call(public static void <grammarName>Parser.<locationModifier>_Sub_Rule_<subruleName>())<alt>
+>>
+
+nonterminalFilter3(locationModifier, ruleNameValue, ruleNamePattern, alt, subruleName) ::= <<
+withincode(public final * <grammarName>Parser.*(..))&&!withincode(public final * <grammarName>Parser.<ruleNameValue>(..))&&call(public static void <grammarName>Parser.<locationModifier>_Sub_Rule_<subruleName>())<alt>
+>>
+
+branchFilter1(locationModifier, ruleNameValue, altIndex) ::= <<
+call(public static void <grammarName>Parser.<locationModifier>_Parse_Rule_<ruleNameValue>_Alternative_<altIndex>())
+>>
+
+branchFilter2(locationModifier, ruleNameValue, altIndex) ::= <<
+call(public static void <grammarName>Parser.<locationModifier>_Parse_Rule_<ruleNameValue>_Alternative_*())&&!call(public static void <grammarName>Parser.<locationModifier>_Parse_Rule_<ruleNameValue>_Alternative_<altIndex>())
+>>
+
+branchFilter3(locationModifier, ruleNameValue, altIndex) ::= <<
+call(public static void <grammarName>Parser.<locationModifier>_Parse_Rule_*_Alternative_<altIndex>())&&!call(public static void <grammarName>Parser.<locationModifier>_Parse_Rule_<ruleNameValue>_Alternative_<altIndex>())
+>>
+
+branchFilter4(locationModifier, ruleNameValue, altIndex) ::= <<
+call(public static void <grammarName>Parser.<locationModifier>_Parse_Rule_*_Alternative_*())&&!call(public static void <grammarName>Parser.<locationModifier>_Parse_Rule_*_Alternative_<altIndex>())&&!call(public static void <grammarName>Parser.<locationModifier>_Parse_Rule_<ruleNameValue>_Alternative_*())
+>>
+
+branchFilter5(locationModifier, ruleNameValue) ::= <<
+call(public static void <grammarName>Parser.<locationModifier>_Parse_Rule_<ruleNameValue>())
+>>
+
+branchFilter6(locationModifier, ruleNameValue) ::= <<
+call(public static void <grammarName>Parser.<locationModifier>_Parse_Rule_*())&&!call(public static void <grammarName>Parser.<locationModifier>_Parse_Rule_*_Alternative_*())&&!call(public static void <grammarName>Parser.<locationModifier>_Parse_Rule_<ruleNameValue>())
+>>
+
+withinFilter1(rangeModifier, ruleNameValue, ruleNamePattern, alt) ::= <<
+<rangeModifier>(public final * <grammarName>Parser.<ruleNameValue>(..))<alt>
+>>
+
+withinFilter2(rangeModifier, ruleNameValue, ruleNamePattern, alt) ::= <<
+<rangeModifier>(public final * <grammarName>Parser.*(..))&&!<rangeModifier>(public final * <grammarName>Parser.<ruleNameValue>(..))<alt>
+>>
+
+controlflowFilter1(rangeModifier, ruleNameValue, ruleNamePattern, alt) ::= <<
+<rangeModifier>(call(public final * <grammarName>Parser.<ruleNameValue>(..)))<alt>
+>>
+
+controlflowFilter2(rangeModifier, ruleNameValue, ruleNamePattern, alt) ::= <<
+<rangeModifier>(call(public final * <grammarName>Parser.*(..)))&&!<rangeModifier>(call(public final * <grammarName>Parser.<ruleNameValue>(..)))<alt>
+>>
+
+altFilterForCflow(altIndex) ::= <<
+&&if(java.util.Arrays.toString(<grammarName>Parser.branchTrace.toArray()).contains("<ruleNameCflowPattern>:<altIndex>"))
+>>
+
+reverseAltFilterForCflow(altIndex) ::= <<
+&&if(!java.util.Arrays.toString(<grammarName>Parser.branchTrace.toArray()).contains("<ruleNameCflowPattern>:<altIndex>"))
+>>
+
+altFilterForCflowbelow(altIndex) ::= <<
+&&if(java.util.Arrays.toString(<grammarName>Parser.branchTrace.toArray()).contains("<ruleNameCflowPattern>:<altIndex>"))&&!if(<grammarName>Parser.branchTrace.peek().matches("<ruleNamePattern>:<altIndex>"))
+>>
+
+reverseAltFilterForCflowbelow(altIndex) ::= <<
+&&(if(!java.util.Arrays.toString(<grammarName>Parser.branchTrace.toArray()).contains("<ruleNameCflowPattern>:<altIndex>"))||(if(!<grammarName>Parser.branchTrace.peek().matches("<ruleNamePattern>:<altIndex>"))&&if(<grammarName>Parser.branchTrace.peek().matches("<ruleNamePattern>:\\\\d*"))))
+>>
+
+cflowPatternFilter(pc, fc) ::= <<
+<fc>&&if(java.util.Arrays.toString(<grammarName>Parser.branchTrace.toArray()).matches("<pc>"))
+>>
+
+branchElementList(fb, bl) ::= <<
+<fb>&&<bl:{b | <b>}; separator="&&">
+>>
+
+branchElement(rulePattern) ::= <<
+cflow(call(public final * <grammarName>Parser.<rulePattern>(..)))
+>>
+
+beforeMainExit() ::= <<
+execution(public static void main(String[]))
+>>
+
+advBoundFlt(filterName) ::= <<
+<filterName>()
+>>
+
+blockTmpl(body) ::= <<
+{
+<body>
+}
+>>
+
+commonDeclarationTmpl(name,suffix1,suffix2,body) ::= <<
+<name> <suffix1> <suffix2>
+<body>
+>>
+
+getToken(index) ::= <<
+((<grammarName>Parser)thisJoinPoint.getThis()).input.LT(<index>).getText()
+>>
+
+getParsedText(index) ::= <<
+((<grammarName>Parser)thisJoinPoint.getThis()).input.toString(0,((<grammarName>Parser)thisJoinPoint.getThis()).input.index()+(<index>))
+>>
+
+getParsingStackTrace() ::= <<
+java.util.Arrays.toString(<grammarName>Parser.branchTrace.toArray())
+>>
+
+getBacktrackLevel() ::= <<
+((<grammarName>Parser)thisJoinPoint.getThis()).getBacktrackingLevel()
+>>
+
+conditionStatement(condition, ifBranch, elseBranch) ::= <<
+if <condition> <ifBranch> <elseBranch>
+>>
+
+whileStatement(condition, loopBody) ::= <<
+while <condition> <loopBody>
+>>
+
+doWhileStatement(condition, loopBody) ::= <<
+do <loopBody> while <condition>;
+>>
+
+switchStatement(condition, switchBody) ::= <<
+switch <condition> {
+<switchBody>
+}
+>>
+
+syncStatement(exp, syncBody) ::= <<
+synchronized <exp>
+<syncBody>
+>>
+
+colonStatement(a,b) ::= <<
+<a> : <b>
+>>
+
+elsePart(ep) ::= <<
+else <ep>
+>>
+
+arrayCreatorTmpl(name, e1, e2, e3) ::= <<
+new <name> <e1> <e2> <e3>
+>>
+
+squareBracketWrappedExpression(exp) ::= <<
+[<exp>]
+>>
+
+concatList(l) ::= <<
+<l:{p | <p>}; separator="">
+>>
+
+concatTwo(e1,e2) ::= <<
+<e1><e2>
+>>
+
+concatThree(e1,e2,e3) ::= <<
+<e1><e2><e3>
+>>
+
+concatFour(e1,e2,e3,e4) ::= <<
+<e1><e2><e3><e4>
+>>
+
+concatFive(e1,e2,e3,e4,e5) ::= <<
+<e1><e2><e3><e4><e5>
+>>
+
+concatSix(e1,e2,e3,e4,e5,e6) ::= <<
+<e1><e2><e3><e4><e5><e6>
+>>
+
+fieldDeclarationTmpl(mod,typ,vd,vdl) ::= <<
+<mod> <typ> <vd><vdl>;
+>>
+
+/*========dated========*/
+
+
+
+/* we do not support rule only join point. 1. LL dont support param value passing from bottom to top. 2. There is walk around to directly change the ANTLR grammar. */
+withinPcdDecl(name, pcd, iswithin, iscflow, iscflowbelow) ::= <<
+pointcut <name>(): within(<grammarName>Parser)&&(<pcd>);
+>>
+
+cflowPcdDecl(name, cfwMod, pcd, iswithin, iscflow, iscflowbelow) ::= <<
+pointcut <name>(): within(<grammarName>Parser)&&(<pcd>);
+>>
+
+cflowbelowPcdDecl(name, cfwMod, pcd, iswithin, iscflow, iscflowbelow) ::= <<
+pointcut <name>(): within(<grammarName>Parser)&&(<pcd>);
+>>
+
+atmCflowAdv(an) ::= <<
+cflow(<an>())
+>>
+
+
+ruleAltFilter(rule, alt) ::= <<
+<if(iswithin)>withincode(public final * <grammarName>Parser.<rule>())&&(if(<grammarName>Parser.Parse_Rule_<rule>_Alternative_<alt> == 1))<elseif(iscflow)><cfwMod>(call(public final * <grammarName>Parser.<rule>()))&&(if(<grammarName>Parser.Parse_Rule_<rule>_Alternative_<alt> > 0))<elseif(iscflowbelow)><cfwMod>(call(public final * <grammarName>Parser.<rule>()))&&(if(<grammarName>Parser.Parse_Rule_<rule>_Alternative_<alt> > 1))<else>call(public static void <grammarName>Parser.<locationModifier>_Parse_Rule_<rule>_Alternative_<alt>())<endif>
+>>
+
+ruleOnlyFilter(rule) ::= <<
+<if(iswithin)>withincode(public final * <grammarName>Parser.<rule>())<elseif(iscflow)><cfwMod>(call(public final * <grammarName>Parser.<rule>()))<elseif(iscflowbelow)><cfwMod>(call(public final * <grammarName>Parser.<rule>()))<else>call(public static void <grammarName>Parser.<locationModifier>_Parse_Rule_<rule>())<endif>
+>>
+
+
+
+
